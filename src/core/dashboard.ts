@@ -100,14 +100,20 @@ export interface TeamView {
   mow: UnitView | null;
 }
 
+export type CardOutcome = 'win' | 'loss' | 'cleanup';
+
 export interface CardView {
   key: string;
   timestamp: string;
   zone: string;
   score: string;
   anyAttackerAlive: boolean;
-  /** Esito dal punto di vista del giocatore: attacco riuscito o difesa tenuta */
-  success: boolean;
+  /**
+   * Colore della card:
+   *  - cleanup: difesa gia' parziale all'inizio (qualche unita' senza HP) e sterminata
+   *  - win/loss: esito dal punto di vista del giocatore (attacco riuscito o difesa tenuta)
+   */
+  outcome: CardOutcome;
   buffs: string[];
   attacker: TeamView;
   defender: TeamView;
@@ -140,6 +146,15 @@ function buffLabel(abId: PyValue): string {
   return tkStr(abId);
 }
 
+function cardOutcome(ev: BattleEvent, anyAttackerAlive: boolean, tab: Tab): CardOutcome {
+  const defenders = ev.defenderUnits;
+  const startedPartial = defenders.some((u) => !u.hadHpBefore);
+  const allDefendersDead = defenders.length > 0 && defenders.every((u) => !u.alive);
+  if (startedPartial && allDefendersDead) return 'cleanup';
+  const success = tab === 'attack' ? anyAttackerAlive : !anyAttackerAlive;
+  return success ? 'win' : 'loss';
+}
+
 function buildCard(ev: BattleEvent, index: number, tab: Tab): CardView {
   const timestamp = fmtTs(ev.createdOnMs);
   const zone = `Bersaglio: ${fmtZone(ev.zoneType)}`;
@@ -148,8 +163,8 @@ function buildCard(ev: BattleEvent, index: number, tab: Tab): CardView {
   const buffs = ev.buffAbilityIds.map(buffLabel);
   const attacker = teamRow(ev.attackerUnits, ev.attackerMow);
   const defender = teamRow(ev.defenderUnits, ev.defenderMow);
-  const success = tab === 'attack' ? anyAttackerAlive : !anyAttackerAlive;
-  return { key: `${index}`, timestamp, zone, score, anyAttackerAlive, success, buffs, attacker, defender };
+  const outcome = cardOutcome(ev, anyAttackerAlive, tab);
+  return { key: `${index}`, timestamp, zone, score, anyAttackerAlive, outcome, buffs, attacker, defender };
 }
 
 /**

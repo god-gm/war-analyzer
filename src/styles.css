@@ -26,6 +26,7 @@
   --muted: #a6a6a6; /* gray65 */
   --score-ok: #4caf50;
   --score-ko: #e04b4b;
+  --score-cleanup: #4a9eff;
   --buff: #80bfff;
   --mow: #ffd700;
   --unit-box: #474747; /* gray28 */
@@ -521,11 +522,12 @@ input {
   --accent: var(--score-ok);
   position: relative;
   padding: 10px 12px 10px 16px;
-  border: 1px solid var(--panel-edge);
+  border: 1px solid color-mix(in srgb, var(--accent) 55%, var(--panel-edge));
   border-radius: 10px;
   background:
-    linear-gradient(90deg, color-mix(in srgb, var(--accent) 7%, transparent), transparent 35%),
+    linear-gradient(90deg, color-mix(in srgb, var(--accent) 20%, transparent), color-mix(in srgb, var(--accent) 4%, transparent) 70%),
     var(--card);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 12%, transparent);
   overflow: hidden;
   transition: border-color 0.15s, background-color 0.15s;
   animation: fade-in 0.35s ease-out both;
@@ -533,6 +535,11 @@ input {
 
 .battle-card.is-loss {
   --accent: var(--score-ko);
+}
+
+/* Difesa gia' parziale all'inizio e sterminata */
+.battle-card.is-cleanup {
+  --accent: var(--score-cleanup);
 }
 
 .battle-card::before {
@@ -547,7 +554,7 @@ input {
 }
 
 .battle-card:hover {
-  border-color: #3a3e47;
+  border-color: var(--accent);
   background-color: var(--card-hover);
 }
 
@@ -575,12 +582,16 @@ input {
   font-variant-numeric: tabular-nums;
 }
 
-.score-ok {
+.score-win {
   color: var(--score-ok);
 }
 
-.score-ko {
+.score-loss {
   color: var(--score-ko);
+}
+
+.score-cleanup {
+  color: var(--score-cleanup);
 }
 
 .row-label {
