@@ -1,0 +1,471 @@
+[
+ {
+  "input": "",
+  "err": "Expecting value: line 1 column 1 (char 0)"
+ },
+ {
+  "input": " ",
+  "err": "Expecting value: line 1 column 2 (char 1)"
+ },
+ {
+  "input": "{",
+  "err": "Expecting property name enclosed in double quotes: line 1 column 2 (char 1)"
+ },
+ {
+  "input": "[",
+  "err": "Expecting value: line 1 column 2 (char 1)"
+ },
+ {
+  "input": "]",
+  "err": "Expecting value: line 1 column 1 (char 0)"
+ },
+ {
+  "input": "}",
+  "err": "Expecting value: line 1 column 1 (char 0)"
+ },
+ {
+  "input": "nul",
+  "err": "Expecting value: line 1 column 1 (char 0)"
+ },
+ {
+  "input": "null",
+  "ok": {
+   "t": "None"
+  }
+ },
+ {
+  "input": "true",
+  "ok": {
+   "t": "bool",
+   "v": true
+  }
+ },
+ {
+  "input": "false",
+  "ok": {
+   "t": "bool",
+   "v": false
+  }
+ },
+ {
+  "input": "NaN",
+  "ok": {
+   "t": "float",
+   "v": "nan"
+  }
+ },
+ {
+  "input": "Infinity",
+  "ok": {
+   "t": "float",
+   "v": "inf"
+  }
+ },
+ {
+  "input": "-Infinity",
+  "ok": {
+   "t": "float",
+   "v": "-inf"
+  }
+ },
+ {
+  "input": "-Infinit",
+  "err": "Expecting value: line 1 column 1 (char 0)"
+ },
+ {
+  "input": "-",
+  "err": "Expecting value: line 1 column 1 (char 0)"
+ },
+ {
+  "input": "-0",
+  "ok": {
+   "t": "int",
+   "v": "0"
+  }
+ },
+ {
+  "input": "0",
+  "ok": {
+   "t": "int",
+   "v": "0"
+  }
+ },
+ {
+  "input": "01",
+  "err": "Extra data: line 1 column 2 (char 1)"
+ },
+ {
+  "input": "1.",
+  "err": "Extra data: line 1 column 2 (char 1)"
+ },
+ {
+  "input": "1.5",
+  "ok": {
+   "t": "float",
+   "v": "1.5"
+  }
+ },
+ {
+  "input": "1e5",
+  "ok": {
+   "t": "float",
+   "v": "100000.0"
+  }
+ },
+ {
+  "input": "1E+5",
+  "ok": {
+   "t": "float",
+   "v": "100000.0"
+  }
+ },
+ {
+  "input": "1e",
+  "err": "Extra data: line 1 column 2 (char 1)"
+ },
+ {
+  "input": "1e-",
+  "err": "Extra data: line 1 column 2 (char 1)"
+ },
+ {
+  "input": "-1.5e-3",
+  "ok": {
+   "t": "float",
+   "v": "-0.0015"
+  }
+ },
+ {
+  "input": "1.0",
+  "ok": {
+   "t": "float",
+   "v": "1.0"
+  }
+ },
+ {
+  "input": "123456789012345678901234567890",
+  "ok": {
+   "t": "int",
+   "v": "123456789012345678901234567890"
+  }
+ },
+ {
+  "input": "1e400",
+  "ok": {
+   "t": "float",
+   "v": "inf"
+  }
+ },
+ {
+  "input": "-1e400",
+  "ok": {
+   "t": "float",
+   "v": "-inf"
+  }
+ },
+ {
+  "input": "[1,]",
+  "err": "Illegal trailing comma before end of array: line 1 column 3 (char 2)"
+ },
+ {
+  "input": "[1 2]",
+  "err": "Expecting ',' delimiter: line 1 column 4 (char 3)"
+ },
+ {
+  "input": "[,]",
+  "err": "Expecting value: line 1 column 2 (char 1)"
+ },
+ {
+  "input": "{,}",
+  "err": "Expecting property name enclosed in double quotes: line 1 column 2 (char 1)"
+ },
+ {
+  "input": "{\"a\":1,}",
+  "err": "Illegal trailing comma before end of object: line 1 column 7 (char 6)"
+ },
+ {
+  "input": "{\"a\" 1}",
+  "err": "Expecting ':' delimiter: line 1 column 6 (char 5)"
+ },
+ {
+  "input": "{\"a\":}",
+  "err": "Expecting value: line 1 column 6 (char 5)"
+ },
+ {
+  "input": "{a:1}",
+  "err": "Expecting property name enclosed in double quotes: line 1 column 2 (char 1)"
+ },
+ {
+  "input": "{\"a\":1 \"b\":2}",
+  "err": "Expecting ',' delimiter: line 1 column 8 (char 7)"
+ },
+ {
+  "input": "{\"a\":1}x",
+  "err": "Extra data: line 1 column 8 (char 7)"
+ },
+ {
+  "input": "{\"a\":1}  \n ",
+  "ok": {
+   "t": "dict",
+   "v": [
+    [
+     "a",
+     {
+      "t": "int",
+      "v": "1"
+     }
+    ]
+   ]
+  }
+ },
+ {
+  "input": "\ufeff{}",
+  "err": "Unexpected UTF-8 BOM (decode using utf-8-sig): line 1 column 1 (char 0)"
+ },
+ {
+  "input": "\"abc",
+  "err": "Unterminated string starting at: line 1 column 1 (char 0)"
+ },
+ {
+  "input": "\"a\\x\"",
+  "err": "Invalid \\escape: line 1 column 3 (char 2)"
+ },
+ {
+  "input": "\"\\u12\"",
+  "err": "Invalid \\uXXXX escape: line 1 column 3 (char 2)"
+ },
+ {
+  "input": "\"\\u12G4\"",
+  "err": "Invalid \\uXXXX escape: line 1 column 3 (char 2)"
+ },
+ {
+  "input": "\"\\ud83d\\ude00\"",
+  "ok": {
+   "t": "str",
+   "v": "\ud83d\ude00"
+  }
+ },
+ {
+  "input": "\"\\ud83d\"",
+  "ok": {
+   "t": "str",
+   "v": "\ud83d"
+  }
+ },
+ {
+  "input": "\"\\ud83d\\u0041\"",
+  "ok": {
+   "t": "str",
+   "v": "\ud83dA"
+  }
+ },
+ {
+  "input": "\"\\ud83d\\ude0\"",
+  "err": "Invalid \\uXXXX escape: line 1 column 9 (char 8)"
+ },
+ {
+  "input": "\"a\tb\"",
+  "err": "Invalid control character at: line 1 column 3 (char 2)"
+ },
+ {
+  "input": "\"a\nb\"",
+  "err": "Invalid control character at: line 1 column 3 (char 2)"
+ },
+ {
+  "input": "\"\u00e9\ud83d\ude00\"",
+  "ok": {
+   "t": "str",
+   "v": "\u00e9\ud83d\ude00"
+  }
+ },
+ {
+  "input": "[\"\u00e9\ud83d\ude00\", 1, x]",
+  "err": "Expecting value: line 1 column 11 (char 10)"
+ },
+ {
+  "input": "{\"a\":[1,{\"b\":[}]}",
+  "err": "Expecting value: line 1 column 15 (char 14)"
+ },
+ {
+  "input": "{\"x\":1,\"x\":2}",
+  "ok": {
+   "t": "dict",
+   "v": [
+    [
+     "x",
+     {
+      "t": "int",
+      "v": "2"
+     }
+    ]
+   ]
+  }
+ },
+ {
+  "input": "{\"eventResults\": []}",
+  "ok": {
+   "t": "dict",
+   "v": [
+    [
+     "eventResults",
+     {
+      "t": "list",
+      "v": []
+     }
+    ]
+   ]
+  }
+ },
+ {
+  "input": "[1,\n2,\n,3]",
+  "err": "Expecting value: line 3 column 1 (char 7)"
+ },
+ {
+  "input": "  \n\n  [\n  tru ]",
+  "err": "Expecting value: line 4 column 3 (char 10)"
+ },
+ {
+  "input": "\"\\/\\b\\f\\n\\r\\t\\\"\\\\\"",
+  "ok": {
+   "t": "str",
+   "v": "/\b\f\n\r\t\"\\"
+  }
+ },
+ {
+  "input": "[NaN, Infinity, -Infinity, -0.0, 1e16, 1e15, 0.0001, 0.00001, 123.456, 1e22, 5e-324]",
+  "ok": {
+   "t": "list",
+   "v": [
+    {
+     "t": "float",
+     "v": "nan"
+    },
+    {
+     "t": "float",
+     "v": "inf"
+    },
+    {
+     "t": "float",
+     "v": "-inf"
+    },
+    {
+     "t": "float",
+     "v": "-0.0"
+    },
+    {
+     "t": "float",
+     "v": "1e+16"
+    },
+    {
+     "t": "float",
+     "v": "1000000000000000.0"
+    },
+    {
+     "t": "float",
+     "v": "0.0001"
+    },
+    {
+     "t": "float",
+     "v": "1e-05"
+    },
+    {
+     "t": "float",
+     "v": "123.456"
+    },
+    {
+     "t": "float",
+     "v": "1e+22"
+    },
+    {
+     "t": "float",
+     "v": "5e-324"
+    }
+   ]
+  }
+ },
+ {
+  "input": "{\"a\":1,\n\"b\":2,\n}",
+  "err": "Illegal trailing comma before end of object: line 2 column 6 (char 13)"
+ },
+ {
+  "input": "[\n\n",
+  "err": "Expecting value: line 3 column 1 (char 3)"
+ },
+ {
+  "input": "[1] [2]",
+  "err": "Extra data: line 1 column 5 (char 4)"
+ },
+ {
+  "input": "[ ]",
+  "ok": {
+   "t": "list",
+   "v": []
+  }
+ },
+ {
+  "input": "{ }",
+  "ok": {
+   "t": "dict",
+   "v": []
+  }
+ },
+ {
+  "input": "[\"\"]",
+  "ok": {
+   "t": "list",
+   "v": [
+    {
+     "t": "str",
+     "v": ""
+    }
+   ]
+  }
+ },
+ {
+  "input": "[-]",
+  "err": "Expecting value: line 1 column 2 (char 1)"
+ },
+ {
+  "input": "[--1]",
+  "err": "Expecting value: line 1 column 2 (char 1)"
+ },
+ {
+  "input": "[1.e5]",
+  "err": "Expecting ',' delimiter: line 1 column 3 (char 2)"
+ },
+ {
+  "input": "[.5]",
+  "err": "Expecting value: line 1 column 2 (char 1)"
+ },
+ {
+  "input": "[+1]",
+  "err": "Expecting value: line 1 column 2 (char 1)"
+ },
+ {
+  "input": "[0x10]",
+  "err": "Expecting ',' delimiter: line 1 column 3 (char 2)"
+ },
+ {
+  "input": "[1e5.5]",
+  "err": "Expecting ',' delimiter: line 1 column 5 (char 4)"
+ },
+ {
+  "input": "[truee]",
+  "err": "Expecting ',' delimiter: line 1 column 6 (char 5)"
+ },
+ {
+  "input": "[true",
+  "err": "Expecting ',' delimiter: line 1 column 6 (char 5)"
+ },
+ {
+  "input": "[\"\\u00e9\"]",
+  "ok": {
+   "t": "list",
+   "v": [
+    {
+     "t": "str",
+     "v": "\u00e9"
+    }
+   ]
+  }
+ }
+]

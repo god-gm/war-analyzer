@@ -1,0 +1,86 @@
+{
+ "utf8_invalid_start": {
+  "hex": "7b226576656e74526573756c7473223a2022ff227d",
+  "err": "Impossibile leggere il file: 'utf-8' codec can't decode byte 0xff in position 18: invalid start byte"
+ },
+ "utf8_invalid_cont1": {
+  "hex": "7b2261223a2022e241227d",
+  "err": "Impossibile leggere il file: 'utf-8' codec can't decode byte 0xe2 in position 7: invalid continuation byte"
+ },
+ "utf8_invalid_cont2": {
+  "hex": "7b2261223a2022e28241227d",
+  "err": "Impossibile leggere il file: 'utf-8' codec can't decode bytes in position 7-8: invalid continuation byte"
+ },
+ "utf8_end1": {
+  "hex": "7b2261223a20317de2",
+  "err": "Impossibile leggere il file: 'utf-8' codec can't decode byte 0xe2 in position 8: unexpected end of data"
+ },
+ "utf8_end2": {
+  "hex": "7b2261223a20317de282",
+  "err": "Impossibile leggere il file: 'utf-8' codec can't decode bytes in position 8-9: unexpected end of data"
+ },
+ "utf8_end4": {
+  "hex": "7b2261223a20317df09f98",
+  "err": "Impossibile leggere il file: 'utf-8' codec can't decode bytes in position 8-10: unexpected end of data"
+ },
+ "utf8_surrogate": {
+  "hex": "7b2261223a2022eda080227d",
+  "err": "Impossibile leggere il file: 'utf-8' codec can't decode byte 0xed in position 7: invalid continuation byte"
+ },
+ "utf8_overlong": {
+  "hex": "7b2261223a2022c0af227d",
+  "err": "Impossibile leggere il file: 'utf-8' codec can't decode byte 0xc0 in position 7: invalid start byte"
+ },
+ "utf8_overlong3": {
+  "hex": "7b2261223a2022e080af227d",
+  "err": "Impossibile leggere il file: 'utf-8' codec can't decode byte 0xe0 in position 7: invalid continuation byte"
+ },
+ "utf8_toobig": {
+  "hex": "7b2261223a2022f4908080227d",
+  "err": "Impossibile leggere il file: 'utf-8' codec can't decode byte 0xf4 in position 7: invalid continuation byte"
+ },
+ "utf8_f5": {
+  "hex": "7b2261223a2022f5227d",
+  "err": "Impossibile leggere il file: 'utf-8' codec can't decode byte 0xf5 in position 7: invalid start byte"
+ },
+ "utf8_ok": {
+  "hex": "7b226576656e74526573756c7473223a205b22c3a9f09f9880225d7d",
+  "ok": true
+ },
+ "bom": {
+  "hex": "efbbbf7b226576656e74526573756c7473223a205b5d7d",
+  "err": "Il file non contiene un JSON valido: Unexpected UTF-8 BOM (decode using utf-8-sig): line 1 column 1 (char 0)"
+ },
+ "crlf_error": {
+  "hex": "7b0d0a2261223a20312c0d0a2262223a200d0a7d",
+  "err": "Il file non contiene un JSON valido: Expecting value: line 4 column 1 (char 16)"
+ },
+ "cr_error": {
+  "hex": "7b0d2261223a20312c0d22622220327d",
+  "err": "Il file non contiene un JSON valido: Expecting ':' delimiter: line 3 column 5 (char 14)"
+ },
+ "not_json": {
+  "hex": "68656c6c6f",
+  "err": "Il file non contiene un JSON valido: Expecting value: line 1 column 1 (char 0)"
+ },
+ "empty": {
+  "hex": "",
+  "err": "Il file non contiene un JSON valido: Expecting value: line 1 column 1 (char 0)"
+ },
+ "list_root": {
+  "hex": "5b7b226576656e74526573756c7473223a205b5d7d5d",
+  "err": "Il file non sembra un export valido dei dati di guerra (manca la chiave 'eventResults')."
+ },
+ "missing_key": {
+  "hex": "7b226576656e74726573756c7473223a205b5d7d",
+  "err": "Il file non sembra un export valido dei dati di guerra (manca la chiave 'eventResults')."
+ },
+ "null_value": {
+  "hex": "7b226576656e74526573756c7473223a206e756c6c7d",
+  "ok": true
+ },
+ "ok": {
+  "hex": "7b226576656e74526573756c7473223a205b5d7d",
+  "ok": true
+ }
+}
