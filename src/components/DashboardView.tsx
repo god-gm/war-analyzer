@@ -41,27 +41,26 @@ export function DashboardView({ model }: { model: DashboardModel }) {
           </select>
         </div>
         <span className="controls-count">{count}</span>
+        {tabCounts && (
+          <div className="tabs" role="tablist" aria-label="Tipo di battaglie">
+            {TABS.map((t) => (
+              <button
+                key={t.id}
+                type="button"
+                role="tab"
+                id={`tab-${t.id}`}
+                aria-selected={tab === t.id}
+                aria-controls="battle-panel"
+                className={`tab${tab === t.id ? ' is-active' : ''}`}
+                onClick={() => controller.onTabChanged(t.id)}
+              >
+                {t.label}
+                <span className="tab-count">{tabCounts[t.id]}</span>
+              </button>
+            ))}
+          </div>
+        )}
       </div>
-
-      {tabCounts && (
-        <div className="tabs" role="tablist" aria-label="Tipo di battaglie">
-          {TABS.map((t) => (
-            <button
-              key={t.id}
-              type="button"
-              role="tab"
-              id={`tab-${t.id}`}
-              aria-selected={tab === t.id}
-              aria-controls="battle-panel"
-              className={`tab${tab === t.id ? ' is-active' : ''}`}
-              onClick={() => controller.onTabChanged(t.id)}
-            >
-              {t.label}
-              <span className="tab-count">{tabCounts[t.id]}</span>
-            </button>
-          ))}
-        </div>
-      )}
 
       <section
         className="scroll-area panel"

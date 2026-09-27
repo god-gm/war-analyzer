@@ -415,29 +415,33 @@ input {
   font-variant-numeric: tabular-nums;
 }
 
-/* Tab Attacco / Difesa */
+/* Tab Attacco / Difesa (nella barra dei controlli) */
 .tabs {
-  display: flex;
-  gap: 4px;
-  border-bottom: 1px solid var(--panel-edge);
+  display: inline-flex;
+  gap: 2px;
+  margin-left: auto;
+  padding: 3px;
+  border: 1px solid var(--panel-edge);
+  border-radius: 8px;
+  background: var(--panel);
 }
 
 .tab {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  padding: 8px 18px;
+  height: 32px;
+  padding: 0 14px;
   border: 0;
-  border-bottom: 2px solid transparent;
-  margin-bottom: -1px;
+  border-radius: 6px;
   background: none;
   color: var(--muted);
   font-family: var(--font-display);
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 700;
   letter-spacing: 0.05em;
   cursor: pointer;
-  transition: color 0.15s, border-color 0.15s;
+  transition: color 0.15s, background-color 0.15s;
 }
 
 .tab:hover {
@@ -446,12 +450,13 @@ input {
 
 .tab.is-active {
   color: var(--gold-bright);
-  border-bottom-color: var(--gold);
+  background: linear-gradient(180deg, #262a33, #1b1e24);
+  box-shadow: inset 0 0 0 1px var(--gold-dim);
 }
 
 .tab-count {
   min-width: 22px;
-  padding: 1px 6px;
+  padding: 0 6px;
   border-radius: 999px;
   background: var(--panel-2);
   border: 1px solid var(--panel-edge);
@@ -725,6 +730,92 @@ input {
   font-size: 12px;
 }
 
+/* Desktop largo: layout compatto, fino a 10 battaglie (5 righe x 2) in una schermata */
+@media (min-width: 1200px) {
+  .dashboard {
+    padding-top: 12px;
+    padding-bottom: 16px;
+    gap: 8px;
+  }
+
+  .dash-header {
+    padding: 8px 16px;
+  }
+
+  .dash-logo {
+    height: 48px;
+    width: auto;
+  }
+
+  .dash-title {
+    font-size: 20px;
+  }
+
+  .dash-file {
+    margin-top: 2px;
+  }
+
+  .controls {
+    padding: 4px;
+  }
+
+  .scroll-area {
+    min-height: 0;
+    padding: 6px;
+  }
+
+  .card-list {
+    gap: 6px;
+  }
+
+  .battle-card {
+    padding: 6px 10px 6px 14px;
+  }
+
+  .card-header {
+    padding-bottom: 2px;
+  }
+
+  .buffs-row {
+    padding-bottom: 2px;
+  }
+
+  .buffs-row .row-label {
+    width: auto;
+  }
+
+  .card-sep {
+    display: none;
+  }
+
+  /* Attaccante e difensore affiancati, etichetta sopra i ritratti */
+  .teams {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+    padding-top: 2px;
+    border-top: 1px solid #404040;
+  }
+
+  .team-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0;
+    padding: 2px 0 0;
+  }
+
+  .team-defender {
+    padding-left: 8px;
+    border-left: 1px solid #2c2c2c;
+  }
+
+  .team-row .row-label {
+    width: auto;
+    font-size: 11px;
+    line-height: 14px;
+  }
+}
+
 /* --- Animazioni ---------------------------------------------------------------- */
 
 @keyframes rise {
@@ -813,6 +904,16 @@ input {
   .controls-count {
     width: 100%;
     white-space: pre-wrap;
+  }
+
+  .tabs {
+    width: 100%;
+    margin-left: 0;
+  }
+
+  .tab {
+    flex: 1;
+    justify-content: center;
   }
 
   .scroll-area {

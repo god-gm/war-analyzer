@@ -53,8 +53,10 @@ export function BattleCard({ card }: { card: CardView }) {
 
       <div className="card-sep" />
 
-      <TeamRow label="Attaccante:" team={card.attacker} side="attacker" />
-      <TeamRow label="Difensore:" team={card.defender} side="defender" />
+      <div className="teams">
+        <TeamRow label="Attaccante:" team={card.attacker} side="attacker" />
+        <TeamRow label="Difensore:" team={card.defender} side="defender" />
+      </div>
     </article>
   );
 }
