@@ -63,7 +63,7 @@ export function ImportView({ onImportSuccess }: Props) {
         <span className="corner bl" />
         <span className="corner br" />
 
-        <Emblem size={96} />
+        <Emblem height={150} className="import-logo" />
         <Title className="import-title" />
         <div className="rule" aria-hidden="true">
           <span />

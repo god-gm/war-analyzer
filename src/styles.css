@@ -126,7 +126,20 @@ input {
 
 .emblem {
   flex: none;
-  filter: drop-shadow(0 4px 14px rgba(192, 39, 31, 0.35));
+  display: block;
+  width: auto;
+  object-fit: contain;
+  user-select: none;
+  filter: drop-shadow(0 6px 14px rgba(0, 0, 0, 0.75)) drop-shadow(0 0 18px rgba(192, 39, 31, 0.28));
+}
+
+.import-logo {
+  height: 150px;
+  animation: logo-glow 4s ease-in-out infinite;
+}
+
+.dash-logo {
+  height: 72px;
 }
 
 /* --- Import view ------------------------------------------------------------- */
@@ -284,7 +297,7 @@ input {
 /* --- Dashboard --------------------------------------------------------------- */
 
 .dashboard {
-  max-width: 1180px;
+  max-width: 1320px;
   margin: 0 auto;
   padding: 24px 24px 32px;
   display: flex;
@@ -434,9 +447,16 @@ input {
 }
 
 .card-list {
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: 8px;
+}
+
+/* Desktop: due card per riga (ordine di lettura: da sinistra a destra, dall'alto in basso) */
+@media (min-width: 960px) {
+  .card-list {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }
 
 /* --- Battle card ------------------------------------------------------------- */
@@ -666,6 +686,11 @@ input {
   to { opacity: 1; }
 }
 
+@keyframes logo-glow {
+  0%, 100% { filter: drop-shadow(0 6px 14px rgba(0, 0, 0, 0.75)) drop-shadow(0 0 16px rgba(192, 39, 31, 0.25)); }
+  50% { filter: drop-shadow(0 6px 14px rgba(0, 0, 0, 0.75)) drop-shadow(0 0 28px rgba(192, 39, 31, 0.5)); }
+}
+
 @keyframes spin {
   to { transform: rotate(360deg); }
 }
@@ -704,9 +729,12 @@ input {
     gap: 12px;
   }
 
-  .dash-header .emblem {
-    width: 44px;
-    height: 44px;
+  .dash-logo {
+    height: 56px;
+  }
+
+  .import-logo {
+    height: 120px;
   }
 
   .dash-title {
@@ -762,8 +790,8 @@ input {
 }
 
 @media (max-width: 380px) {
-  .dash-header .emblem {
-    display: none;
+  .dash-logo {
+    height: 48px;
   }
 
   .import-title {

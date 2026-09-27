@@ -15,7 +15,7 @@ export function DashboardView({ model }: { model: DashboardModel }) {
   return (
     <div className="dashboard">
       <header className="dash-header panel">
-        <Emblem size={56} />
+        <Emblem height={72} className="dash-logo" />
         <div className="dash-header-text">
           <Title as="h1" className="dash-title" />
           <p className="dash-file">File: {model.fileName}</p>
