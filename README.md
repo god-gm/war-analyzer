@@ -1,7 +1,7 @@
 # Ordo Malleus - War Stats Analyzer (web)
 
-SPA React che replica il comportamento dell'app desktop Python in
-[`python_original/`](python_original/): analisi dei file di export delle guerre di gilda
+SPA React che replica il comportamento dell'app desktop Python (cartella locale
+`python_original/`, non versionata): analisi dei file di export delle guerre di gilda
 di Warhammer 40,000: Tacticus. Pubblicata su GitHub Pages.
 
 Il file viene elaborato interamente nel browser: nessun dato viene inviato a server
@@ -34,13 +34,14 @@ src/
 └── components/           # interfaccia React
 tests/
 ├── equivalence.test.ts   # confronta la SPA con i golden generati dal Python
-├── fixtures/             # golden
+├── fixtures/             # golden + copia del file di esempio (sample_b1.json)
 └── tools/generate_golden.py
 ```
 
 ## Rigenerare i golden
 
-I golden sono prodotti eseguendo il codice Python originale (customtkinter viene
+Serve la cartella locale `python_original/`. I golden sono prodotti eseguendo il
+codice Python originale (customtkinter viene
 sostituito da uno stub; serve Pillow perché il modulo originale lo importa):
 
 ```bash

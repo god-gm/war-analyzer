@@ -224,6 +224,8 @@ D._IMG_CACHE = NoImages()
 
 
 def sample_dashboard():
+    # Copia del file di esempio usata anche dai test (python_original non e' versionato)
+    (OUT / "sample_b1.json").write_bytes((SAMPLE / "b1").read_bytes())
     raw = json.loads((SAMPLE / "b1").read_text(encoding="utf-8"))
     return run_dashboard(raw, "b1")
 

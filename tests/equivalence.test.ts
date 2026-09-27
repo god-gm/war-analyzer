@@ -190,7 +190,7 @@ describe('helper', () => {
 describe('dashboard sul file di esempio', () => {
   it('produce esattamente le stesse schermate', () => {
     const golden = fixture('sample_dashboard.json') as GoldenDashboard;
-    const content = readFileSync(resolve(ROOT, 'python_original/sample/b1'), 'utf-8');
+    const content = readFileSync(resolve(ROOT, 'tests/fixtures/sample_b1.json'), 'utf-8');
     const got = runDashboard(content, 'b1');
     const exp = normalizeGolden(golden);
     expect(got.options).toEqual(exp.options);
