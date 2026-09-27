@@ -3,7 +3,16 @@
  * _load_player e _render_cards), indipendente da React.
  */
 
-import { buildCards, collectApiIds, countLabel, PLACEHOLDER, type CardView, type DashboardModel } from './dashboard';
+import {
+  buildCards,
+  collectApiIds,
+  countLabel,
+  defenseCountLabel,
+  PLACEHOLDER,
+  type CardView,
+  type DashboardModel,
+  type Tab,
+} from './dashboard';
 import type { PlayerBattles } from './models';
 import { fetchAll, isCached } from './portraits';
 
@@ -16,6 +25,10 @@ export type Content =
 export interface DashboardState {
   /** Valore mostrato nel menu a tendina */
   selected: string;
+  /** Tab attiva (resta la stessa quando si cambia giocatore) */
+  tab: Tab;
+  /** Numero di battaglie per tab del giocatore selezionato; null = tab nascoste */
+  tabCounts: Record<Tab, number> | null;
   /** Testo dell'etichetta contatore */
   count: string;
   /** Contenuto dell'area scrollabile */
@@ -23,8 +36,16 @@ export interface DashboardState {
 }
 
 export class DashboardController {
-  state: DashboardState = { selected: PLACEHOLDER, count: '', content: { kind: 'placeholder' } };
+  state: DashboardState = {
+    selected: PLACEHOLDER,
+    tab: 'attack',
+    tabCounts: null,
+    count: '',
+    content: { kind: 'placeholder' },
+  };
   private currentPlayer = '';
+  /** Battaglie del giocatore corrente per ciascuna tab */
+  private current: Record<Tab, PlayerBattles> | null = null;
   /** Promesse dei caricamenti in corso (utile per i test). */
   pending: Promise<void>[] = [];
 
@@ -39,13 +60,14 @@ export class DashboardController {
   }
 
   private showPlaceholderMessage() {
-    this.set({ count: '', content: { kind: 'placeholder' } });
+    this.set({ count: '', tabCounts: null, content: { kind: 'placeholder' } });
   }
 
   onPlayerChanged(name: string): void {
     this.set({ selected: name });
     if (name === PLACEHOLDER) {
       this.currentPlayer = '';
+      this.current = null;
       this.showPlaceholderMessage();
     } else {
       try {
@@ -57,33 +79,60 @@ export class DashboardController {
     }
   }
 
+  onTabChanged(tab: Tab): void {
+    if (tab === this.state.tab) return;
+    this.set({ tab });
+    if (!this.current) return;
+    try {
+      this.showTab();
+    } catch (e) {
+      console.error(e);
+    }
+  }
+
   private loadPlayer(name: string): void {
-    this.set({ content: { kind: 'empty' } });
+    this.current = null;
+    this.set({ tabCounts: null, content: { kind: 'empty' } });
 
     const uid = this.model.nameToUid.get(name);
     if (!uid) return;
-    const pb = this.model.battles.get(uid);
-    if (!pb) return;
+    const attack = this.model.battles.get(uid);
+    const defense = this.model.defenses.get(uid);
+    if (!attack && !defense) return;
 
+    const empty = (pb: PlayerBattles): PlayerBattles => ({ ...pb, battles: [] });
+    this.current = {
+      attack: attack ?? empty(defense as PlayerBattles),
+      defense: defense ?? empty(attack as PlayerBattles),
+    };
     this.currentPlayer = name;
+    this.set({
+      tabCounts: { attack: this.current.attack.battles.length, defense: this.current.defense.battles.length },
+    });
+    this.showTab();
+  }
 
-    this.set({ count: countLabel(pb) });
+  private showTab(): void {
+    const tab = this.state.tab;
+    const pb = (this.current as Record<Tab, PlayerBattles>)[tab];
+
+    this.set({ count: tab === 'attack' ? countLabel(pb) : defenseCountLabel(pb), content: { kind: 'empty' } });
 
     // Raccogli tutti gli api_id necessari per questo giocatore
     const apiIds = collectApiIds(pb);
     const toFetch = [...apiIds].filter((aid) => !isCached(aid));
 
+    const snapshot = this.currentPlayer;
     if (toFetch.length > 0) {
       this.set({ content: { kind: 'loading' } });
-      const snapshot = name;
-      this.pending.push(fetchAll(toFetch).then(() => this.renderCards(pb, snapshot)));
+      this.pending.push(fetchAll(toFetch).then(() => this.renderCards(pb, snapshot, tab)));
     } else {
-      this.renderCards(pb, name);
+      this.renderCards(pb, snapshot, tab);
     }
   }
 
-  private renderCards(pb: PlayerBattles, expectedPlayer: string): void {
-    if (this.currentPlayer !== expectedPlayer) return;
-    this.set({ content: { kind: 'cards', cards: buildCards(pb) } });
+  private renderCards(pb: PlayerBattles, expectedPlayer: string, expectedTab: Tab): void {
+    if (this.currentPlayer !== expectedPlayer || this.state.tab !== expectedTab) return;
+    this.set({ content: { kind: 'cards', cards: buildCards(pb, expectedTab) } });
   }
 }

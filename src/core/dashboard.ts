@@ -3,16 +3,21 @@
  */
 
 import type { BattleEvent, MachineOfWar, PlayerBattles, UnitEntry, WarReport } from './models';
-import { extractBattles, findGuildTeamIndex } from './parser';
+import { extractBattles, extractDefenses, findGuildTeamIndex } from './parser';
 import { BUFF_LABELS, fmtTs, fmtZone, HOME_GUILD, normalizeScore, toApiId } from './format';
 import { assertHashable, fmtThousands, PyError, pyAdd, pySortCmp, pyStr, strHead, tkStr, typeName, type PyValue } from './pyvalue';
 import { getCached, isTainted, taint } from './portraits';
 
 export const PLACEHOLDER = '— Seleziona un giocatore —';
 
+/** Tab mostrate per il giocatore selezionato. */
+export type Tab = 'attack' | 'defense';
+
 export interface DashboardModel {
   fileName: string;
   battles: Map<string, PlayerBattles>;
+  /** Attacchi subiti, per defender.userId */
+  defenses: Map<string, PlayerBattles>;
   nameToUid: Map<string, string>;
   /** Voci del menu: placeholder + nomi ordinati */
   options: string[];
@@ -37,8 +42,19 @@ export function buildDashboardModel(report: WarReport): DashboardModel {
     nameToUid.set(name, uid);
   }
 
+  // Giocatori che hanno solo difeso (nessun attacco): selezionabili per la tab Difesa
+  const defenses = extractDefenses(report, teamIndex);
+  const knownUids = new Set(nameToUid.values());
+  for (const [uid, pb] of defenses) {
+    if (knownUids.has(uid)) continue;
+    let name = pb.displayName;
+    if (typeof name !== 'string') continue;
+    if (nameToUid.has(name)) name = `${name} (${strHead(uid, 6)})`;
+    nameToUid.set(name, uid);
+  }
+
   const sortedNames = Array.from(nameToUid.keys()).sort(pySortCmp);
-  return { fileName: report.fileName, battles, nameToUid, options: [PLACEHOLDER, ...sortedNames] };
+  return { fileName: report.fileName, battles, defenses, nameToUid, options: [PLACEHOLDER, ...sortedNames] };
 }
 
 /** Totale punteggio e testo del contatore (può sollevare TypeError come l'originale). */
@@ -46,6 +62,13 @@ export function countLabel(pb: PlayerBattles): string {
   let total: PyValue = 0;
   for (const ev of pb.battles) total = pyAdd(total, normalizeScore(ev.score));
   return `(${pb.battles.length} attacchi  •  ${fmtThousands(total)} pt totali)`;
+}
+
+/** Contatore della tab Difesa: attacchi subiti e punti concessi agli avversari. */
+export function defenseCountLabel(pb: PlayerBattles): string {
+  let total: PyValue = 0;
+  for (const ev of pb.battles) total = pyAdd(total, normalizeScore(ev.score));
+  return `(${pb.battles.length} difese  •  ${fmtThousands(total)} pt concessi)`;
 }
 
 /** Tutti gli api_id necessari per il giocatore. */
@@ -83,6 +106,8 @@ export interface CardView {
   zone: string;
   score: string;
   anyAttackerAlive: boolean;
+  /** Esito dal punto di vista del giocatore: attacco riuscito o difesa tenuta */
+  success: boolean;
   buffs: string[];
   attacker: TeamView;
   defender: TeamView;
@@ -115,7 +140,7 @@ function buffLabel(abId: PyValue): string {
   return tkStr(abId);
 }
 
-function buildCard(ev: BattleEvent, index: number): CardView {
+function buildCard(ev: BattleEvent, index: number, tab: Tab): CardView {
   const timestamp = fmtTs(ev.createdOnMs);
   const zone = `Bersaglio: ${fmtZone(ev.zoneType)}`;
   const anyAttackerAlive = ev.attackerUnits.some((u) => u.alive);
@@ -123,18 +148,19 @@ function buildCard(ev: BattleEvent, index: number): CardView {
   const buffs = ev.buffAbilityIds.map(buffLabel);
   const attacker = teamRow(ev.attackerUnits, ev.attackerMow);
   const defender = teamRow(ev.defenderUnits, ev.defenderMow);
-  return { key: `${index}`, timestamp, zone, score, anyAttackerAlive, buffs, attacker, defender };
+  const success = tab === 'attack' ? anyAttackerAlive : !anyAttackerAlive;
+  return { key: `${index}`, timestamp, zone, score, anyAttackerAlive, success, buffs, attacker, defender };
 }
 
 /**
  * Costruisce le card dalla piu' recente alla meno recente.
  * Se una card solleva un'eccezione, restano visibili quelle gia' create (come in Tk).
  */
-export function buildCards(pb: PlayerBattles): CardView[] {
+export function buildCards(pb: PlayerBattles, tab: Tab = 'attack'): CardView[] {
   const cards: CardView[] = [];
   const reversed = [...pb.battles].reverse();
   try {
-    reversed.forEach((ev, i) => cards.push(buildCard(ev, i)));
+    reversed.forEach((ev, i) => cards.push(buildCard(ev, i, tab)));
   } catch (e) {
     console.error(e);
   }

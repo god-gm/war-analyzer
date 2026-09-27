@@ -2,15 +2,20 @@
 
 import { useState } from 'react';
 import { DashboardController, type DashboardState } from '../core/controller';
-import type { DashboardModel } from '../core/dashboard';
+import type { DashboardModel, Tab } from '../core/dashboard';
 import { BattleCard } from './BattleCard';
 import { Emblem } from './Emblem';
 import { Title } from './Title';
 
+const TABS: { id: Tab; label: string }[] = [
+  { id: 'attack', label: 'Attacco' },
+  { id: 'defense', label: 'Difesa' },
+];
+
 export function DashboardView({ model }: { model: DashboardModel }) {
   const [controller] = useState(() => new DashboardController(model, (s) => setState(s)));
   const [state, setState] = useState<DashboardState>(controller.state);
-  const { selected, count, content } = state;
+  const { selected, tab, tabCounts, count, content } = state;
 
   return (
     <div className="dashboard">
@@ -38,7 +43,33 @@ export function DashboardView({ model }: { model: DashboardModel }) {
         <span className="controls-count">{count}</span>
       </div>
 
-      <section className="scroll-area panel" aria-live="polite">
+      {tabCounts && (
+        <div className="tabs" role="tablist" aria-label="Tipo di battaglie">
+          {TABS.map((t) => (
+            <button
+              key={t.id}
+              type="button"
+              role="tab"
+              id={`tab-${t.id}`}
+              aria-selected={tab === t.id}
+              aria-controls="battle-panel"
+              className={`tab${tab === t.id ? ' is-active' : ''}`}
+              onClick={() => controller.onTabChanged(t.id)}
+            >
+              {t.label}
+              <span className="tab-count">{tabCounts[t.id]}</span>
+            </button>
+          ))}
+        </div>
+      )}
+
+      <section
+        className="scroll-area panel"
+        aria-live="polite"
+        id="battle-panel"
+        role={tabCounts ? 'tabpanel' : undefined}
+        aria-labelledby={tabCounts ? `tab-${tab}` : undefined}
+      >
         {content.kind === 'placeholder' && (
           <p className="scroll-message">Selezionare un giocatore per visualizzare le stats</p>
         )}
@@ -48,7 +79,12 @@ export function DashboardView({ model }: { model: DashboardModel }) {
             Caricamento dati...
           </div>
         )}
-        {content.kind === 'cards' && (
+        {content.kind === 'cards' && content.cards.length === 0 && (
+          <p className="scroll-message">
+            {tab === 'attack' ? 'Nessun attacco effettuato' : 'Nessun attacco subito'}
+          </p>
+        )}
+        {content.kind === 'cards' && content.cards.length > 0 && (
           <div className="card-list">
             {content.cards.map((card) => (
               <BattleCard key={card.key} card={card} />

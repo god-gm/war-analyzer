@@ -31,11 +31,11 @@ function TeamRow({ label, team, side }: { label: string; team: TeamView; side: '
 
 export function BattleCard({ card }: { card: CardView }) {
   return (
-    <article className={`battle-card ${card.anyAttackerAlive ? 'is-win' : 'is-loss'}`}>
+    <article className={`battle-card ${card.success ? 'is-win' : 'is-loss'}`}>
       <header className="card-header">
         <span className="card-date">{card.timestamp}</span>
         <span className="card-zone">{card.zone}</span>
-        <span className={`card-score ${card.anyAttackerAlive ? 'score-ok' : 'score-ko'}`}>{card.score}</span>
+        <span className={`card-score ${card.success ? 'score-ok' : 'score-ko'}`}>{card.score}</span>
       </header>
 
       {card.buffs.length > 0 && (

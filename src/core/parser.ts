@@ -98,18 +98,8 @@ export function findGuildTeamIndex(report: WarReport, guildName: string): PyValu
   return null;
 }
 
-/**
- * Estrae e raggruppa i battleFinished per attacker.userId.
- *
- * Se `teamIndex` e' fornito, vengono inclusi solo gli eventi il cui
- * campo `teamIndex` corrisponde al valore indicato.
- *
- * Il risultato mantiene l'ordine di inserimento (come il dict Python).
- */
-export function extractBattles(report: WarReport, teamIndex: PyValue = null): Map<string, PlayerBattles> {
-  const raw = report.rawData;
-
-  // userId -> displayName da playerData
+/** userId -> displayName da playerData. */
+function collectPlayerNames(raw: PyValue): Map<string, PyValue> {
   const playerNames = new Map<string, PyValue>();
   for (const er of pyIter(pyGet(raw, 'eventResults', []))) {
     for (const p of pyIter(pyGet(pyGet(er, 'eventResponseData', new Map()), 'playerData', []))) {
@@ -122,6 +112,48 @@ export function extractBattles(report: WarReport, teamIndex: PyValue = null): Ma
       }
     }
   }
+  return playerNames;
+}
+
+function buildEvent(
+  log: PyValue,
+  attacker: PyValue,
+  defender: PyValue,
+  zone: PyValue,
+  buffs: PyValue,
+  attackerUid: string,
+): BattleEvent {
+  return {
+    battleId: pyGet(log, 'id', ''),
+    createdOnMs: pyGet(log, 'createdOn', 0),
+    zoneType: pyGet(zone, 'type', ''),
+    zoneVisualId: pyGet(zone, 'visualId', ''),
+    score: pyGet(log, 'score', 0),
+    attackerUserId: attackerUid,
+    attackerUnits: pyIter(pyOr(pyGet(attacker, 'units'), () => [])).map(parseAttackerUnit),
+    attackerMow: parseMow(pyGet(attacker, 'machineOfWar')),
+    defenderUserId: pyGet(defender, 'userId'),
+    defenderUnits: pyIter(pyOr(pyGet(defender, 'units'), () => [])).map(parseDefenderUnit),
+    defenderMow: parseMow(pyGet(defender, 'machineOfWar')),
+    buffAbilityIds: pyIter(buffs)
+      .filter((b) => pyTruthy(pyGet(b, 'abilityId')))
+      .map((b) => pyGet(b, 'abilityId')),
+  };
+}
+
+/**
+ * Estrae e raggruppa i battleFinished per attacker.userId.
+ *
+ * Se `teamIndex` e' fornito, vengono inclusi solo gli eventi il cui
+ * campo `teamIndex` corrisponde al valore indicato.
+ *
+ * Il risultato mantiene l'ordine di inserimento (come il dict Python).
+ */
+export function extractBattles(report: WarReport, teamIndex: PyValue = null): Map<string, PlayerBattles> {
+  const raw = report.rawData;
+
+  // userId -> displayName da playerData
+  const playerNames = collectPlayerNames(raw);
 
   const battlesByPlayer = new Map<string, BattleEvent[]>();
 
@@ -140,22 +172,7 @@ export function extractBattles(report: WarReport, teamIndex: PyValue = null): Ma
       const attackerUid = pyOr(pyGet(attacker, 'userId'), () => pyGet(log, 'userId'));
       if (!pyTruthy(attackerUid)) continue;
 
-      const event: BattleEvent = {
-        battleId: pyGet(log, 'id', ''),
-        createdOnMs: pyGet(log, 'createdOn', 0),
-        zoneType: pyGet(zone, 'type', ''),
-        zoneVisualId: pyGet(zone, 'visualId', ''),
-        score: pyGet(log, 'score', 0),
-        attackerUserId: attackerUid as string,
-        attackerUnits: pyIter(pyOr(pyGet(attacker, 'units'), () => [])).map(parseAttackerUnit),
-        attackerMow: parseMow(pyGet(attacker, 'machineOfWar')),
-        defenderUserId: pyGet(defender, 'userId'),
-        defenderUnits: pyIter(pyOr(pyGet(defender, 'units'), () => [])).map(parseDefenderUnit),
-        defenderMow: parseMow(pyGet(defender, 'machineOfWar')),
-        buffAbilityIds: pyIter(buffs)
-          .filter((b) => pyTruthy(pyGet(b, 'abilityId')))
-          .map((b) => pyGet(b, 'abilityId')),
-      };
+      const event = buildEvent(log, attacker, defender, zone, buffs, attackerUid as string);
 
       // battles_by_player.setdefault(attacker_uid, ...) richiede una chiave hashable
       assertHashable(attackerUid);
@@ -177,5 +194,68 @@ export function extractBattles(report: WarReport, teamIndex: PyValue = null): Ma
     result.set(uid, { userId: uid, displayName: name, battles });
   }
 
+  return result;
+}
+
+/**
+ * Estrae e raggruppa per defender.userId i battleFinished della squadra avversaria,
+ * cioe' gli attacchi subiti dai giocatori della squadra `teamIndex`.
+ *
+ * Funzionalita' della sola versione web: gli eventi malformati vengono ignorati
+ * invece di sollevare eccezioni. Senza `teamIndex` non si puo' sapere chi difende
+ * per la gilda, quindi il risultato e' vuoto.
+ */
+export function extractDefenses(report: WarReport, teamIndex: PyValue): Map<string, PlayerBattles> {
+  const result = new Map<string, PlayerBattles>();
+  if (teamIndex === null) return result;
+  const raw = report.rawData;
+
+  let playerNames = new Map<string, PyValue>();
+  try {
+    playerNames = collectPlayerNames(raw);
+  } catch {
+    /* nomi non disponibili: si usa lo short uid */
+  }
+
+  const battlesByPlayer = new Map<string, BattleEvent[]>();
+  try {
+    for (const er of pyIter(pyGet(raw, 'eventResults', []))) {
+      const logs = pyGet(pyGet(er, 'eventResponseData', new Map()), 'activityLogs', []);
+      for (const log of pyIter(logs)) {
+        try {
+          if (!pyEq(pyGet(log, 'type'), 'battleFinished')) continue;
+          if (pyEq(pyGet(log, 'teamIndex'), teamIndex)) continue;
+
+          const attacker = pyOr(pyGet(log, 'attacker'), () => new Map());
+          const defender = pyOr(pyGet(log, 'defender'), () => new Map());
+          const zone = pyOr(pyGet(log, 'zone'), () => new Map());
+          const buffs = pyOr(pyGet(log, 'buffs'), () => []);
+
+          const defenderUid = pyGet(defender, 'userId');
+          if (typeof defenderUid !== 'string' || defenderUid === '') continue;
+          const attackerUid = pyOr(pyGet(attacker, 'userId'), () => pyGet(log, 'userId'));
+
+          const event = buildEvent(log, attacker, defender, zone, buffs, typeof attackerUid === 'string' ? attackerUid : '');
+          const list = battlesByPlayer.get(defenderUid);
+          if (list) list.push(event);
+          else battlesByPlayer.set(defenderUid, [event]);
+        } catch {
+          /* evento malformato: ignorato */
+        }
+      }
+    }
+  } catch {
+    /* struttura non iterabile: si tengono gli eventi gia' letti */
+  }
+
+  for (const [uid, battles] of battlesByPlayer) {
+    try {
+      battles.sort((a, b) => pySortCmp(a.createdOnMs, b.createdOnMs));
+    } catch {
+      /* timestamp non confrontabili: resta l'ordine del file */
+    }
+    const name = playerNames.has(uid) ? (playerNames.get(uid) as PyValue) : strHead(uid, 8);
+    result.set(uid, { userId: uid, displayName: name, battles });
+  }
   return result;
 }
